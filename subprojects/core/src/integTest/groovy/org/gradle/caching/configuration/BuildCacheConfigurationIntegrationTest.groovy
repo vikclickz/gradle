@@ -16,7 +16,6 @@
 
 package org.gradle.caching.configuration
 
-import org.gradle.caching.configuration.internal.DefaultBuildCacheConfiguration
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
 import org.gradle.launcher.daemon.configuration.GradleProperties
@@ -142,44 +141,6 @@ class BuildCacheConfigurationIntegrationTest extends AbstractIntegrationSpec {
         expect:
         succeeds("help", "--build-cache", "--offline")
         result.output.contains("Remote build cache is disabled when running with --offline.")
-    }
-
-    def "system properties still have an effect on pushing and pulling"() {
-        settingsFile << """
-            buildCache {
-                local(DirectoryBuildCache) {
-                    directory = file("local-cache")
-                }
-            }
-        """
-        when:
-        executer.withBuildCacheEnabled()
-        executer.withFullDeprecationStackTraceDisabled()
-        executer.expectDeprecationWarning()
-        executer.withArgument("-D${DefaultBuildCacheConfiguration.BUILD_CACHE_CAN_PUSH}=false")
-        succeeds("tasks")
-        then:
-        result.assertOutputContains "Using directory (${file("local-cache")}) as local build cache, push is enabled."
-        result.assertOutputContains "Pushing to any build cache is globally disabled."
-        when:
-        executer.withBuildCacheEnabled()
-        executer.expectDeprecationWarning()
-        executer.withArgument("-D${DefaultBuildCacheConfiguration.BUILD_CACHE_CAN_PULL}=false")
-        succeeds("tasks")
-        then:
-        result.assertOutputContains("Using directory (${file("local-cache")}) as local build cache, push is enabled.")
-        result.assertOutputContains "Pulling from any build cache is globally disabled."
-        when:
-        executer.withBuildCacheEnabled()
-        executer.expectDeprecationWarning()
-        executer.expectDeprecationWarning()
-        executer.withArgument("-D${DefaultBuildCacheConfiguration.BUILD_CACHE_CAN_PULL}=false")
-        executer.withArgument("-D${DefaultBuildCacheConfiguration.BUILD_CACHE_CAN_PUSH}=false")
-        succeeds("tasks")
-        then:
-        result.assertOutputContains("Using directory (${file("local-cache")}) as local build cache, push is enabled.")
-        result.assertOutputContains "Pushing to any build cache is globally disabled."
-        result.assertOutputContains "Pulling from any build cache is globally disabled."
     }
 
     @IgnoreIf({GradleContextualExecuter.embedded})

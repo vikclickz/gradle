@@ -23,6 +23,4 @@ import org.gradle.caching.configuration.BuildCacheConfiguration;
 public interface BuildCacheConfigurationInternal extends BuildCacheConfiguration {
     // Finds a build cache implementation factory class for the given configuration type
     <T extends BuildCache> Class<? extends BuildCacheServiceFactory<T>> getBuildCacheServiceFactoryType(Class<T> configurationType);
-    boolean isPullDisabled();
-    boolean isPushDisabled();
 }

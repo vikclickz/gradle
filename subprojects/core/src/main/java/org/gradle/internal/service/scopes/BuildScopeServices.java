@@ -448,9 +448,9 @@ public class BuildScopeServices extends DefaultServiceRegistry {
         return new DefaultBuildScanRequest();
     }
 
-    BuildCacheConfigurationInternal createBuildCacheConfiguration(Instantiator instantiator, StartParameter startParameter) {
+    BuildCacheConfigurationInternal createBuildCacheConfiguration(Instantiator instantiator) {
         List<BuildCacheServiceRegistration> allBuildCacheServiceFactories = getAll(BuildCacheServiceRegistration.class);
-        return instantiator.newInstance(DefaultBuildCacheConfiguration.class, instantiator, allBuildCacheServiceFactories, startParameter);
+        return instantiator.newInstance(DefaultBuildCacheConfiguration.class, instantiator, allBuildCacheServiceFactories);
     }
 
     BuildCacheServiceProvider createBuildCacheServiceProvider(BuildCacheConfigurationInternal buildCacheConfiguration, StartParameter startParameter, BuildOperationExecutor buildOperationExecutor, TemporaryFileProvider temporaryFileProvider, InstantiatorFactory instantiatorFactory) {

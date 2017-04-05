@@ -46,8 +46,6 @@ class BuildCacheServiceProviderTest extends Specification {
     def local = createConfiguration(DirectoryBuildCache)
     def remote
     def buildCacheConfiguration = Mock(BuildCacheConfigurationInternal) {
-        isPullDisabled() >> false
-        isPushDisabled() >> false
         getLocal() >> { local }
         getRemote() >> { remote }
     }
