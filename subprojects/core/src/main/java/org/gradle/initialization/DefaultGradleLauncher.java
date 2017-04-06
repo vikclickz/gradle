@@ -25,9 +25,12 @@ import org.gradle.api.logging.StandardOutputListener;
 import org.gradle.configuration.BuildConfigurer;
 import org.gradle.execution.BuildConfigurationActionExecuter;
 import org.gradle.execution.BuildExecuter;
+import org.gradle.execution.taskgraph.CalculateTaskGraphDescriptorInternal;
+import org.gradle.execution.taskgraph.DefaultCalculateTaskGraphDescriptor;
 import org.gradle.internal.concurrent.CompositeStoppable;
 import org.gradle.internal.logging.LoggingManagerInternal;
 import org.gradle.internal.operations.BuildOperationContext;
+import org.gradle.internal.progress.BuildOperationDetails;
 import org.gradle.internal.progress.BuildOperationExecutor;
 import org.gradle.internal.service.scopes.BuildScopeServices;
 
@@ -155,7 +158,9 @@ public class DefaultGradleLauncher implements GradleLauncher {
         stage = Stage.Build;
 
         // Populate task graph
-        buildOperationExecutor.run("Calculate task graph", new CalculateTaskGraphAction());
+        CalculateTaskGraphDescriptorInternal calculateTaskGraphDescriptor = new DefaultCalculateTaskGraphDescriptor();
+        BuildOperationDetails buildOperationDetails = BuildOperationDetails.displayName("Calculate task graph").operationDescriptor(calculateTaskGraphDescriptor).build();
+        buildOperationExecutor.run(buildOperationDetails, new CalculateTaskGraphAction(calculateTaskGraphDescriptor));
 
         // Execute build
         buildOperationExecutor.run("Run tasks", new RunTasksAction());
@@ -215,12 +220,20 @@ public class DefaultGradleLauncher implements GradleLauncher {
     }
 
     private class CalculateTaskGraphAction implements Action<BuildOperationContext> {
+        private final CalculateTaskGraphDescriptorInternal descriptorInternal;
+
+        public CalculateTaskGraphAction(CalculateTaskGraphDescriptorInternal descriptorInternal) {
+            this.descriptorInternal = descriptorInternal;
+        }
+
         @Override
         public void execute(BuildOperationContext buildOperationContext) {
             buildConfigurationActionExecuter.select(gradle);
             if (isConfigureOnDemand()) {
                 projectsEvaluated();
             }
+            // make requested tasks available from according build operation.
+            descriptorInternal.populateTasks(gradle.getTaskGraph().getRequestedTasks());
         }
     }
 
