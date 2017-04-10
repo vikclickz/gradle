@@ -16,6 +16,7 @@ import org.gradle.snapshotting.files.PhysicalSnapshot;
 import org.gradle.snapshotting.files.Physicals;
 import org.gradle.snapshotting.operations.ApplyTo;
 import org.gradle.snapshotting.operations.Operation;
+import org.gradle.snapshotting.rules.CachingRuleMatcher;
 import org.gradle.snapshotting.rules.Rule;
 import org.gradle.snapshotting.rules.RuleMatcher;
 
@@ -51,7 +52,7 @@ public class Snapshotter {
 
     private void process(Collection<? extends Fileish> files, Context rootContext, Iterable<? extends Rule<?, ?>> rules, PhysicalHashCache hashCache) throws IOException {
         Deque<Operation> queue = new ArrayDeque<>();
-        RuleMatcher ruleMatcher = new RuleMatcher(rules);
+        RuleMatcher ruleMatcher = new CachingRuleMatcher(rules);
         SnapshotterState state = new SnapshotterState(ruleMatcher, hashCache, rootContext);
         queue.addLast(new ApplyTo(files, rootContext));
 
