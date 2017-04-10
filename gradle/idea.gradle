@@ -3,9 +3,9 @@ allprojects {
 
     idea {
         module {
-            // Force everything to Java 6, pending detangling some int test cycles or switching to project-per-source-set mapping
-            languageLevel = new org.gradle.plugins.ide.idea.model.IdeaLanguageLevel("1.6")
-            targetBytecodeVersion = JavaVersion.VERSION_1_6
+            // Force everything to Java 7, pending detangling some int test cycles or switching to project-per-source-set mapping
+            languageLevel = new org.gradle.plugins.ide.idea.model.IdeaLanguageLevel("1.7")
+            targetBytecodeVersion = JavaVersion.VERSION_1_7
 
             iml {
                 whenMerged { module ->

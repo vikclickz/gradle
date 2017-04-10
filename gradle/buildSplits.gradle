@@ -42,7 +42,8 @@ def buckets = [
         ":signing",
         ":testingBase",
         ":baseServicesGroovy",
-        ":toolingApiBuilders"
+        ":toolingApiBuilders",
+        ":snapshotting"
     ],
 
     "4": [
