@@ -106,7 +106,7 @@ class SnapshotterTest extends Specification {
 
     private static final List<Rule> COMMON_CLASSPATH_RULES = ImmutableList.<Rule> builder()
         // Treat JAR files as classpath entries inside the classpath
-        .add(rule().in(ClasspathContext).withType(FileishWithContents).withExtension("jar") { file, context, operations ->
+        .add(rule().in(ClasspathContext).withType(FileishWithContents) { file, context, operations ->
             def subContext = context.recordSubContext(file, ClasspathEntryContext)
             operations.add(new ProcessZip(file, subContext))
         })
@@ -140,7 +140,7 @@ class SnapshotterTest extends Specification {
 
     private static final List<Rule> WAR_FILE_RULES = ImmutableList.<Rule> builder()
         // Handle WAR files as WAR files
-        .add(rule().in(WarList).withType(FileishWithContents).withExtension("war") { file, context, operations ->
+        .add(rule().in(WarList).withType(FileishWithContents) { file, context, operations ->
             def subContext = context.recordSubContext(file, War)
             operations.add(new ProcessZip(file, subContext))
         })
