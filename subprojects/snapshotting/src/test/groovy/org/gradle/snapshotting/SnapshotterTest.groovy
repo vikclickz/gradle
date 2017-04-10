@@ -39,7 +39,6 @@ import org.gradle.snapshotting.operations.ProcessZip
 import org.gradle.snapshotting.operations.SetContext
 import org.gradle.snapshotting.rules.ProcessPropertyFile
 import org.gradle.snapshotting.rules.Rule
-import org.gradle.snapshotting.rules.RuleBuilder
 import org.gradle.test.fixtures.file.CleanupTestDirectory
 import org.gradle.test.fixtures.file.TestFile
 import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
@@ -48,6 +47,8 @@ import spock.lang.Specification
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+
+import static org.gradle.snapshotting.rules.RuleBuilder.rule
 
 @CleanupTestDirectory
 class SnapshotterTest extends Specification {
@@ -88,9 +89,9 @@ class SnapshotterTest extends Specification {
         }
     }
 
-    private static final List<Rule> BASIC_RULES = ImmutableList.<Rule> builder()
+    private static final List<Rule> COMMON_RULES = ImmutableList.<Rule> builder()
         // Hash files in any context
-        .add(RuleBuilder.rule().withType(Fileish) { file, context, operations ->
+        .add(rule().withType(Fileish) { file, context, operations ->
             if (file instanceof FileishWithContents) {
                 context.recordSnapshot(file, file.getContentHash())
             } else if (file instanceof Directoryish) {
@@ -103,42 +104,59 @@ class SnapshotterTest extends Specification {
         })
         .build()
 
-    private static final List<Rule> RUNTIME_CLASSPATH_RULES = ImmutableList.<Rule> builder()
+    private static final List<Rule> COMMON_CLASSPATH_RULES = ImmutableList.<Rule> builder()
         // Treat JAR files as classpath entries inside the classpath
-        .add(RuleBuilder.rule().in(ClasspathContext).withType(FileishWithContents).withExtension("jar") { file, context, operations ->
+        .add(rule().in(ClasspathContext).withType(FileishWithContents).withExtension("jar") { file, context, operations ->
             def subContext = context.recordSubContext(file, ClasspathEntryContext)
             operations.add(new ProcessZip(file, subContext))
         })
         // Treat directories as classpath entries inside the classpath
-        .add(RuleBuilder.rule().in(ClasspathContext).withType(PhysicalDirectory) { directory, context, operations ->
+        .add(rule().in(ClasspathContext).withType(PhysicalDirectory) { directory, context, operations ->
             def subContext = context.recordSubContext(directory, ClasspathEntryContext)
             operations.add(new ProcessDirectory(directory, subContext))
         })
         // Ignore empty directories inside classpath entries
-        .add(RuleBuilder.rule().in(ClasspathEntryContext).withType(Directoryish) { directory, context, operations ->
+        .add(rule().in(ClasspathEntryContext).withType(Directoryish) { directory, context, operations ->
         })
-        .addAll(BASIC_RULES)
+        .build()
+
+    private static final List<Rule> RUNTIME_CLASSPATH_RULES = ImmutableList.<Rule> builder()
+        .addAll(COMMON_CLASSPATH_RULES)
+        .addAll(COMMON_RULES)
+        .build()
+
+    private static final List<Rule> COMPILE_CLASSPATH_RULES = ImmutableList.<Rule> builder()
+        .addAll(COMMON_CLASSPATH_RULES)
+        .add(rule().in(ClasspathEntryContext).withType(FileishWithContents).withExtension(".class") { file, context, operations ->
+            // Generate ABI in real implementation
+            HashCode abiHash = file.getContentHash()
+            context.recordSnapshot(file, abiHash)
+        })
+        // Ignore everything that's not a .class
+        .add(rule().in(ClasspathEntryContext).withType(FileishWithContents) { file, context, operations ->
+        })
+        .addAll(COMMON_RULES)
         .build()
 
     private static final List<Rule> WAR_FILE_RULES = ImmutableList.<Rule> builder()
         // Handle WAR files as WAR files
-        .add(RuleBuilder.rule().in(WarList).withType(FileishWithContents).withExtension("war") { file, context, operations ->
+        .add(rule().in(WarList).withType(FileishWithContents).withExtension("war") { file, context, operations ->
             def subContext = context.recordSubContext(file, War)
             operations.add(new ProcessZip(file, subContext))
         })
         // Handle directories as exploded WAR files
         // TODO: We could allow directories in zips, too
-        .add(RuleBuilder.rule().in(WarList).withType(PhysicalDirectory) { directory, context, operations ->
+        .add(rule().in(WarList).withType(PhysicalDirectory) { directory, context, operations ->
             def subContext = context.recordSubContext(directory, War)
             operations.add(new ProcessDirectory(directory, subContext))
         })
         // Handle WEB-INF/lib as a runtime classpath
-        .add(RuleBuilder.rule().in(War).withType(Directoryish).matching("WEB-INF/lib") { directory, context, operations ->
+        .add(rule().in(War).withType(Directoryish).matching("WEB-INF/lib") { directory, context, operations ->
             def subContext = context.recordSubContext(directory, ClasspathContext)
             operations.add(new SetContext(subContext))
         })
         // Ignore empty directories in WAR files
-        .add(RuleBuilder.rule().in(War).withType(Directoryish) { directory, context, operations ->
+        .add(rule().in(War).withType(Directoryish) { directory, context, operations ->
         })
         // Handle runtime classpaths as usual
         .addAll(RUNTIME_CLASSPATH_RULES)
@@ -150,7 +168,7 @@ class SnapshotterTest extends Specification {
 
     def "snapshots simple files"() {
         when:
-        def (hash, events, physicalSnapshots) = snapshot(DefaultContext, BASIC_RULES,
+        def (hash, events, physicalSnapshots) = snapshot(DefaultContext, COMMON_RULES,
             file('firstFile.txt').setText("Some text"),
             file('secondFile.txt').setText("Second File"),
             file('missingFile.txt'),
@@ -282,7 +300,7 @@ class SnapshotterTest extends Specification {
 
         def rules = ImmutableList.builder()
             // Ignore *.log files inside classpath entries
-            .add(RuleBuilder.rule().in(ClasspathEntryContext).withExtension("log") { file, context, operations ->
+            .add(rule().in(ClasspathEntryContext).withExtension("log") { file, context, operations ->
             })
             .addAll(RUNTIME_CLASSPATH_RULES)
             .build()
