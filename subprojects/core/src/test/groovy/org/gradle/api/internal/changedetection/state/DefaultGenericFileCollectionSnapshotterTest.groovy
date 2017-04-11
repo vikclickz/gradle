@@ -32,13 +32,13 @@ import spock.lang.Specification
 import static org.gradle.api.internal.changedetection.state.TaskFilePropertyCompareStrategy.*
 import static org.gradle.api.internal.changedetection.state.TaskFilePropertySnapshotNormalizationStrategy.ABSOLUTE
 
-class AbstractFileCollectionSnapshotterTest extends Specification {
+class DefaultGenericFileCollectionSnapshotterTest extends Specification {
     def stringInterner = new StringInterner()
     def fileSystemMirror = Stub(FileSystemMirror) {
         getFile(_) >> null
         getDirectoryTree(_) >> null
     }
-    def snapshotter = new AbstractFileCollectionSnapshotter(new FileSnapshotTreeFactory(new FileSnapshotFactory(TestFiles.fileSystem(), fileSystemMirror, stringInterner, new DefaultFileHasher()), fileSystemMirror, TestFiles.directoryFileTreeFactory()), stringInterner) {
+    def snapshotter = new DefaultGenericFileCollectionSnapshotter(new FileSnapshotTreeFactory(new FileSnapshotFactory(TestFiles.fileSystem(), fileSystemMirror, stringInterner, new DefaultFileHasher()), fileSystemMirror, TestFiles.directoryFileTreeFactory()), stringInterner) {
         @Override
         Class<? extends FileCollectionSnapshotter> getRegisteredType() {
             FileCollectionSnapshotter
