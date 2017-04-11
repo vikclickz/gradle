@@ -29,6 +29,7 @@ import org.gradle.api.internal.changedetection.state.DefaultClasspathEntryHasher
 import org.gradle.api.internal.changedetection.state.DefaultClasspathSnapshotter;
 import org.gradle.api.internal.changedetection.state.DefaultFileSystemMirror;
 import org.gradle.api.internal.changedetection.state.DefaultGenericFileCollectionSnapshotter;
+import org.gradle.api.internal.changedetection.state.FileSnapshotFactory;
 import org.gradle.api.internal.changedetection.state.FileSystemMirror;
 import org.gradle.api.internal.changedetection.state.GenericFileCollectionSnapshotter;
 import org.gradle.api.internal.changedetection.state.GlobalScopeFileTimeStampInspector;
@@ -118,12 +119,16 @@ public class GradleUserHomeScopeServices {
         return fileSystemMirror;
     }
 
-    GenericFileCollectionSnapshotter createGenericFileCollectionSnapshotter(FileHasher hasher, StringInterner stringInterner, FileSystem fileSystem, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror) {
-        return new DefaultGenericFileCollectionSnapshotter(hasher, stringInterner, fileSystem, directoryFileTreeFactory,  fileSystemMirror);
+    FileSnapshotFactory createFileSnapshotFactory(org.gradle.internal.nativeplatform.filesystem.FileSystem fileSystem, FileSystemMirror fileSystemMirror, StringInterner stringInterner, FileHasher hasher) {
+        return new FileSnapshotFactory(fileSystem, fileSystemMirror, stringInterner, hasher);
     }
 
-    ClasspathSnapshotter createClasspathSnapshotter(FileHasher hasher, StringInterner stringInterner, FileSystem fileSystem, DirectoryFileTreeFactory directoryFileTreeFactory, ClasspathEntryHasher classpathEntryHasher, FileSystemMirror fileSystemMirror) {
-        return new DefaultClasspathSnapshotter(hasher, stringInterner, fileSystem, directoryFileTreeFactory, fileSystemMirror, classpathEntryHasher);
+    GenericFileCollectionSnapshotter createGenericFileCollectionSnapshotter(FileSnapshotFactory fileSnapshotFactory, StringInterner stringInterner, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror) {
+        return new DefaultGenericFileCollectionSnapshotter(fileSnapshotFactory, stringInterner, directoryFileTreeFactory,  fileSystemMirror);
+    }
+
+    ClasspathSnapshotter createClasspathSnapshotter(FileSnapshotFactory fileSnapshotFactory, StringInterner stringInterner, DirectoryFileTreeFactory directoryFileTreeFactory, ClasspathEntryHasher classpathEntryHasher, FileSystemMirror fileSystemMirror) {
+        return new DefaultClasspathSnapshotter(fileSnapshotFactory, stringInterner, directoryFileTreeFactory, fileSystemMirror, classpathEntryHasher);
     }
 
     ClasspathHasher createClasspathHasher(ClasspathSnapshotter snapshotter) {

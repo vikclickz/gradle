@@ -38,7 +38,7 @@ class AbstractFileCollectionSnapshotterTest extends Specification {
         getFile(_) >> null
         getDirectoryTree(_) >> null
     }
-    def snapshotter = new AbstractFileCollectionSnapshotter(new DefaultFileHasher(), stringInterner, TestFiles.fileSystem(), TestFiles.directoryFileTreeFactory(), fileSystemMirror) {
+    def snapshotter = new AbstractFileCollectionSnapshotter(new FileSnapshotFactory(TestFiles.fileSystem(), fileSystemMirror, stringInterner, new DefaultFileHasher()), stringInterner, TestFiles.directoryFileTreeFactory(), fileSystemMirror) {
         @Override
         Class<? extends FileCollectionSnapshotter> getRegisteredType() {
             FileCollectionSnapshotter
@@ -304,13 +304,13 @@ class AbstractFileCollectionSnapshotterTest extends Specification {
             switch (change.type) {
                 case ChangeType.ADDED:
                     listener.added(change.path)
-                    break;
+                    break
                 case ChangeType.MODIFIED:
                     listener.changed(change.path)
-                    break;
+                    break
                 case ChangeType.REMOVED:
                     listener.removed(change.path)
-                    break;
+                    break
             }
         }
     }

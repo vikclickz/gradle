@@ -20,9 +20,7 @@ import com.google.common.hash.HashCode;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.cache.StringInterner;
 import org.gradle.api.internal.file.collections.DirectoryFileTreeFactory;
-import org.gradle.api.internal.hash.FileHasher;
 import org.gradle.internal.FileUtils;
-import org.gradle.internal.nativeintegration.filesystem.FileSystem;
 import org.gradle.internal.nativeintegration.filesystem.FileType;
 
 import java.util.ArrayList;
@@ -40,8 +38,8 @@ public class DefaultCompileClasspathSnapshotter extends AbstractFileCollectionSn
     private static final HashCode IGNORED = HashCode.fromInt((DefaultCompileClasspathSnapshotter.class.getName() + " : ignored").hashCode());
     private final ClasspathEntryHasher classpathEntryHasher;
 
-    public DefaultCompileClasspathSnapshotter(FileHasher hasher, StringInterner stringInterner, FileSystem fileSystem, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror, ClasspathEntryHasher classpathEntryHasher) {
-        super(hasher, stringInterner, fileSystem, directoryFileTreeFactory, fileSystemMirror);
+    public DefaultCompileClasspathSnapshotter(FileSnapshotFactory fileSnapshotFactory, StringInterner stringInterner, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror, ClasspathEntryHasher classpathEntryHasher) {
+        super(fileSnapshotFactory, stringInterner, directoryFileTreeFactory, fileSystemMirror);
         this.classpathEntryHasher = classpathEntryHasher;
     }
 
