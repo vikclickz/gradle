@@ -50,7 +50,7 @@ class DefaultClasspathSnapshotterTest extends Specification {
     def directoryFileTreeFactory = Mock(DirectoryFileTreeFactory)
     def fileSystemMirror = Mock(FileSystemMirror)
     def classpathHasher = new DefaultClasspathEntryHasher(new DefaultClasspathContentHasher())
-    def snapshotter = new DefaultClasspathSnapshotter(new FileSnapshotFactory(fileSystem, fileSystemMirror, stringInterner, hasher), stringInterner, directoryFileTreeFactory, fileSystemMirror, classpathHasher)
+    def snapshotter = new DefaultClasspathSnapshotter(new FileSnapshotTreeFactory(new FileSnapshotFactory(fileSystem, fileSystemMirror, stringInterner, hasher), fileSystemMirror, directoryFileTreeFactory), stringInterner, classpathHasher)
 
     def "root elements are unsorted, non-root elements are sorted amongst themselves"() {
         given:
@@ -64,6 +64,7 @@ class DefaultClasspathSnapshotterTest extends Specification {
         when:
         def snapshotInOriginalOrder = snapshotter.snapshot(files(rootFile1, rootDir, rootFile2), UNORDERED, ClasspathSnapshotNormalizationStrategy.INSTANCE)
         then:
+        println snapshotInOriginalOrder.elements*.getName()
         snapshotInOriginalOrder.elements == [rootFile1, rootDir, subFile1, subFile2, rootFile2]
         1 * directoryFileTreeFactory.create(rootDir) >> rootDirTree
         _ * rootDirTree.patterns >> new PatternSet()

@@ -38,6 +38,7 @@ import org.gradle.api.internal.changedetection.state.OutputFilesSnapshotter
 import org.gradle.api.internal.changedetection.state.TaskHistoryRepository
 import org.gradle.api.internal.changedetection.state.TaskHistoryStore
 import org.gradle.api.internal.changedetection.state.ValueSnapshotter
+import org.gradle.api.internal.changedetection.state.FileSnapshotTreeFactory
 import org.gradle.api.internal.file.TestFiles
 import org.gradle.api.internal.hash.DefaultFileHasher
 import org.gradle.api.tasks.incremental.InputFileDetails
@@ -91,7 +92,7 @@ class DefaultTaskArtifactStateRepositoryTest extends AbstractProjectBuilderSpec 
         def stringInterner = new StringInterner()
         def hasher = new CachingFileHasher(new DefaultFileHasher(), cacheAccess, stringInterner, Stub(FileTimeStampInspector), "fileCaches", TestFiles.fileSystem())
         fileSystemMirror = new DefaultFileSystemMirror()
-        fileCollectionSnapshotter = new DefaultGenericFileCollectionSnapshotter(new FileSnapshotFactory(TestFiles.fileSystem(), fileSystemMirror, stringInterner, hasher), stringInterner, TestFiles.directoryFileTreeFactory(), fileSystemMirror)
+        fileCollectionSnapshotter = new DefaultGenericFileCollectionSnapshotter(new FileSnapshotTreeFactory(new FileSnapshotFactory(TestFiles.fileSystem(), fileSystemMirror, stringInterner, hasher), fileSystemMirror, TestFiles.directoryFileTreeFactory()), stringInterner)
         OutputFilesSnapshotter outputFilesSnapshotter = new OutputFilesSnapshotter()
         def classLoaderHierarchyHasher = Mock(ConfigurableClassLoaderHierarchyHasher) {
             getClassLoaderHash(_) >> HashCode.fromInt(123)

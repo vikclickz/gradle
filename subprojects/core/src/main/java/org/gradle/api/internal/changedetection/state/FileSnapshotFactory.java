@@ -57,6 +57,10 @@ public class FileSnapshotFactory {
         return new DefaultFileSnapshot(getPath(dirDetails.getFile()), dirDetails.getRelativePath(), Directory, false, dirSnapshot());
     }
 
+    public FileSnapshot directorySnapshot(File dir) {
+        return new DefaultFileSnapshot(getPath(dir), new RelativePath(false, dir.getName()), Directory, true, dirSnapshot());
+    }
+
     private FileSnapshot calculateFileSnapshot(File file) {
         String path = getPath(file);
         FileMetadataSnapshot stat = fileSystem.stat(file);

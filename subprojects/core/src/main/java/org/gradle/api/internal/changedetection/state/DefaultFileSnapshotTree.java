@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,23 @@ package org.gradle.api.internal.changedetection.state;
 
 import java.util.List;
 
-/**
- * Represents the state of a directory tree.
- */
-public class DirectoryTreeDetails {
-    // Interned path
-    final String path;
+public class DefaultFileSnapshotTree implements FileSnapshotTree {
 
-    // All elements, not just direct children
-    final List<FileSnapshot> elements;
+    private final FileSnapshot root;
+    private final List<FileSnapshot> elements;
 
-    public DirectoryTreeDetails(String path, List<FileSnapshot> elements) {
-        this.path = path;
+    public DefaultFileSnapshotTree(FileSnapshot root, List<FileSnapshot> elements) {
+        this.root = root;
         this.elements = elements;
     }
 
-    public List<FileSnapshot> getElements() {
+    @Override
+    public FileSnapshot getRoot() {
+        return root;
+    }
+
+    @Override
+    public Iterable<? extends FileSnapshot> getElements() {
         return elements;
     }
 }
